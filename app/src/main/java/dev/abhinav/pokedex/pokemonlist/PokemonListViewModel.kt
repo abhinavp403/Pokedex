@@ -13,6 +13,7 @@ import dev.abhinav.pokedex.data.models.PokedexListEntry
 import dev.abhinav.pokedex.repository.PokemonRepository
 import dev.abhinav.pokedex.util.Constants.PAGE_SIZE
 import dev.abhinav.pokedex.util.Resource
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Locale
 import javax.inject.Inject
@@ -28,6 +29,10 @@ class PokemonListViewModel @Inject constructor(
     var loadError = mutableStateOf("")
     var isLoading = mutableStateOf(false)
     var endReached = mutableStateOf(false)
+
+    init {
+        loadPokemonPaginated()
+    }
 
     fun loadPokemonPaginated() {
         viewModelScope.launch {
