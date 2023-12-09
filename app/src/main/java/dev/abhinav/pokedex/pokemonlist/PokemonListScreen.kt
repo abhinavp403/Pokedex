@@ -31,7 +31,6 @@ import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
@@ -45,11 +44,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.google.accompanist.coil.CoilImage
 import dev.abhinav.pokedex.R
 import dev.abhinav.pokedex.data.models.PokedexListEntry
 import dev.abhinav.pokedex.ui.theme.RobotoCondensed
+import timber.log.Timber
 
 @Composable
 fun PokemonListScreen(
@@ -179,6 +179,8 @@ fun PokedexEntry(
     val defaultDominantColor = MaterialTheme.colorScheme.surface
     var dominantColor by remember { mutableStateOf(defaultDominantColor) }
 
+    Timber.d("entry.image: %s", entry.imageUrl)
+    Timber.d("entry.image: %s", dominantColor)
     Box(
         contentAlignment = Center,
         modifier = modifier
@@ -195,26 +197,21 @@ fun PokedexEntry(
             }
     ) {
         Column {
-            CoilImage(
-                request = ImageRequest.Builder(LocalContext.current)
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
                     .data(entry.imageUrl)
-                    .target {
-                        viewModel.calcDominantColor(it) { color ->
-                            dominantColor = color
-                        }
-                    }
+                    .crossfade(true)
                     .build(),
                 contentDescription = entry.pokemonName,
-                fadeIn = true,
+                onSuccess = {
+                    viewModel.calcDominantColor(it.result.drawable) { color ->
+                        dominantColor = color
+                    }
+                },
                 modifier = Modifier
                     .size(120.dp)
                     .align(CenterHorizontally)
-            ) {
-                CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.scale(0.5f)
-                )
-            }
+            )
             Text(
                 text = entry.pokemonName,
                 fontFamily = RobotoCondensed,
